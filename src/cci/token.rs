@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Chars};
 
 enum TokenKind {
     Lparen,
@@ -56,5 +56,18 @@ struct Token {
 }
 
 impl Token {
-    fn next_token<T>(&mut self, file: BufReader<T>) {}
+    fn next_char<T: Read>(&mut self, mut chars: Chars<T>) -> (Option<char>, Chars<T>) {
+        let hoge = match chars.next() {
+            None => 1,
+            Some(c) if c == '/' => {
+                match chars.next() {
+                    Some('/') => {}
+                    Some('*') => {}
+                    Some(_) | None => {}
+                }
+            }
+        };
+
+        (Some('c'), chars)
+    }
 }
