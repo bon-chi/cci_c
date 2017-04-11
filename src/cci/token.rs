@@ -1,7 +1,10 @@
 use std::fs;
-use std::io::{BufReader, Read, Chars};
+use std::str::Chars;
+// use std::io::{BufReader, Read, Chars};
+use std::io::{BufReader, Read};
+use std::iter::Peekable;
 
-enum TokenKind {
+enum CharType {
     Lparen,
     Rparen,
     Lbrace,
@@ -51,23 +54,44 @@ enum TokenKind {
 }
 
 struct Token {
-    kind: TokenKind,
+    kind: CharType,
     string: String,
 }
 
 impl Token {
-    fn next_char<T: Read>(&mut self, mut chars: Chars<T>) -> (Option<char>, Chars<T>) {
-        let hoge = match chars.next() {
-            None => 1,
+    fn next_char<'a>(&mut self,
+                     mut chars: Peekable<Chars<'a>>)
+                     -> (Option<char>, Peekable<Chars<'a>>) {
+        match chars.next() {
+            None => (None, chars),
             Some(c) if c == '/' => {
-                match chars.next() {
-                    Some('/') => {}
-                    Some('*') => {}
-                    Some(_) | None => {}
+                match chars.peek() {
+                    Some(&'/') => {
+                        chars.next();
+                        while let Some(c) = chars.next() {
+                            if c == '\n' {
+                                break;
+                            }
+                        }
+                        (Some('\n'), chars)
+                    }
+                    Some(&'*') => {
+                        chars.next();
+                        while let Some(c) = chars.next() {
+                            if c == '*' {
+                                if let Some(c) = chars.next() {
+                                    if c == '/' {
+                                        return (Some(' '), chars);
+                                    }
+                                }
+                            }
+                        }
+                        (None, chars)
+                    }
+                    Some(_) | None => (Some('/'), chars),
                 }
             }
-        };
-
-        (Some('c'), chars)
+            Some(c) => (Some(c), chars),
+        }
     }
 }
