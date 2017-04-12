@@ -1,6 +1,4 @@
-use std::fs;
 use std::str::Chars;
-use std::io::{BufReader, Read};
 use std::iter::Peekable;
 
 enum CharType {
@@ -41,7 +39,7 @@ enum CharType {
     GreatEq,
     And,
     Or,
-    END_KeyList,
+    EndKeyList,
     Idnet,
     IntNum,
     String,
@@ -106,13 +104,11 @@ mod tests {
         /*
          * multiline comment
          */
- \
-                         {
+        {
             return 0;
-        }
-        "
-                            .chars()
-                            .peekable();
+        }"
+            .chars()
+            .peekable();
         assert_eq!(Some('\n'), token.next_char(&mut chars));
         while let Some(c) = token.next_char(&mut chars) {
             if c == ' ' {
@@ -141,6 +137,22 @@ mod tests {
                 continue;
             }
             assert_eq!('r', c);
+            break;
+        }
+        assert_eq!(Some('e'), token.next_char(&mut chars));
+        assert_eq!(Some('t'), token.next_char(&mut chars));
+        assert_eq!(Some('u'), token.next_char(&mut chars));
+        assert_eq!(Some('r'), token.next_char(&mut chars));
+        assert_eq!(Some('n'), token.next_char(&mut chars));
+        assert_eq!(Some(' '), token.next_char(&mut chars));
+        assert_eq!(Some('0'), token.next_char(&mut chars));
+        assert_eq!(Some(';'), token.next_char(&mut chars));
+        assert_eq!(Some('\n'), token.next_char(&mut chars));
+        while let Some(c) = token.next_char(&mut chars) {
+            if c == ' ' {
+                continue;
+            }
+            assert_eq!('}', c);
             break;
         }
     }
