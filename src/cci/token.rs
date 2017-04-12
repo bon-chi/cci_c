@@ -1,6 +1,5 @@
 use std::fs;
 use std::str::Chars;
-// use std::io::{BufReader, Read, Chars};
 use std::io::{BufReader, Read};
 use std::iter::Peekable;
 
@@ -55,15 +54,13 @@ enum CharType {
 
 struct Token {
     kind: CharType,
-    string: String,
+    value: String,
 }
 
 impl Token {
-    fn next_char<'a>(&mut self,
-                     mut chars: Peekable<Chars<'a>>)
-                     -> (Option<char>, Peekable<Chars<'a>>) {
+    fn next_char<'a>(&mut self, chars: &mut Peekable<Chars<'a>>) -> (Option<char>) {
         match chars.next() {
-            None => (None, chars),
+            None => None,
             Some(c) if c == '/' => {
                 match chars.peek() {
                     Some(&'/') => {
@@ -73,7 +70,7 @@ impl Token {
                                 break;
                             }
                         }
-                        (Some('\n'), chars)
+                        Some('\n')
                     }
                     Some(&'*') => {
                         chars.next();
@@ -81,17 +78,70 @@ impl Token {
                             if c == '*' {
                                 if let Some(c) = chars.next() {
                                     if c == '/' {
-                                        return (Some(' '), chars);
+                                        return Some(' ');
                                     }
                                 }
                             }
                         }
-                        (None, chars)
+                        None
                     }
-                    Some(_) | None => (Some('/'), chars),
+                    Some(_) | None => Some('/'),
                 }
             }
-            Some(c) => (Some(c), chars),
+            Some(c) => Some(c),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Token, CharType};
+    #[test]
+    fn test_next_char() {
+        let mut token = Token {
+            kind: CharType::Lparen,
+            value: "main".to_string(),
+        };
+        let mut chars = "// one line comment
+        /*
+         * multiline comment
+         */
+ \
+                         {
+            return 0;
+        }
+        "
+                            .chars()
+                            .peekable();
+        assert_eq!(Some('\n'), token.next_char(&mut chars));
+        while let Some(c) = token.next_char(&mut chars) {
+            if c == ' ' {
+                continue;
+            }
+            assert_eq!('\n', c);
+            break;
+        }
+        while let Some(c) = token.next_char(&mut chars) {
+            if c == ' ' {
+                continue;
+            }
+            assert_eq!('{', c);
+            break;
+        }
+
+        while let Some(c) = token.next_char(&mut chars) {
+            if c == ' ' {
+                continue;
+            }
+            assert_eq!('\n', c);
+            break;
+        }
+        while let Some(c) = token.next_char(&mut chars) {
+            if c == ' ' {
+                continue;
+            }
+            assert_eq!('r', c);
+            break;
         }
     }
 }
