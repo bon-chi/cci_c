@@ -55,51 +55,45 @@ struct Token {
     value: String,
 }
 
-impl Token {
-    fn next_char<'a>(&mut self, chars: &mut Peekable<Chars<'a>>) -> (Option<char>) {
-        match chars.next() {
-            None => None,
-            Some(c) if c == '/' => {
-                match chars.peek() {
-                    Some(&'/') => {
-                        chars.next();
-                        while let Some(c) = chars.next() {
-                            if c == '\n' {
-                                break;
-                            }
+fn next_char<'a>(chars: &mut Peekable<Chars<'a>>) -> (Option<char>) {
+    match chars.next() {
+        None => None,
+        Some(c) if c == '/' => {
+            match chars.peek() {
+                Some(&'/') => {
+                    chars.next();
+                    while let Some(c) = chars.next() {
+                        if c == '\n' {
+                            break;
                         }
-                        Some('\n')
                     }
-                    Some(&'*') => {
-                        chars.next();
-                        while let Some(c) = chars.next() {
-                            if c == '*' {
-                                if let Some(c) = chars.next() {
-                                    if c == '/' {
-                                        return Some(' ');
-                                    }
+                    Some('\n')
+                }
+                Some(&'*') => {
+                    chars.next();
+                    while let Some(c) = chars.next() {
+                        if c == '*' {
+                            if let Some(c) = chars.next() {
+                                if c == '/' {
+                                    return Some(' ');
                                 }
                             }
                         }
-                        None
                     }
-                    Some(_) | None => Some('/'),
+                    None
                 }
+                Some(_) | None => Some('/'),
             }
-            Some(c) => Some(c),
         }
+        Some(c) => Some(c),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Token;
+    use super::next_char;
     #[test]
     fn test_next_char() {
-        let mut token = Token {
-            // kind: CharType::Lparen,
-            value: "main".to_string(),
-        };
         let mut chars = "// one line comment
         /*
          * multiline comment
@@ -109,15 +103,15 @@ mod tests {
         }"
             .chars()
             .peekable();
-        assert_eq!(Some('\n'), token.next_char(&mut chars));
-        while let Some(c) = token.next_char(&mut chars) {
+        assert_eq!(Some('\n'), next_char(&mut chars));
+        while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
                 continue;
             }
             assert_eq!('\n', c);
             break;
         }
-        while let Some(c) = token.next_char(&mut chars) {
+        while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
                 continue;
             }
@@ -125,30 +119,30 @@ mod tests {
             break;
         }
 
-        while let Some(c) = token.next_char(&mut chars) {
+        while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
                 continue;
             }
             assert_eq!('\n', c);
             break;
         }
-        while let Some(c) = token.next_char(&mut chars) {
+        while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
                 continue;
             }
             assert_eq!('r', c);
             break;
         }
-        assert_eq!(Some('e'), token.next_char(&mut chars));
-        assert_eq!(Some('t'), token.next_char(&mut chars));
-        assert_eq!(Some('u'), token.next_char(&mut chars));
-        assert_eq!(Some('r'), token.next_char(&mut chars));
-        assert_eq!(Some('n'), token.next_char(&mut chars));
-        assert_eq!(Some(' '), token.next_char(&mut chars));
-        assert_eq!(Some('0'), token.next_char(&mut chars));
-        assert_eq!(Some(';'), token.next_char(&mut chars));
-        assert_eq!(Some('\n'), token.next_char(&mut chars));
-        while let Some(c) = token.next_char(&mut chars) {
+        assert_eq!(Some('e'), next_char(&mut chars));
+        assert_eq!(Some('t'), next_char(&mut chars));
+        assert_eq!(Some('u'), next_char(&mut chars));
+        assert_eq!(Some('r'), next_char(&mut chars));
+        assert_eq!(Some('n'), next_char(&mut chars));
+        assert_eq!(Some(' '), next_char(&mut chars));
+        assert_eq!(Some('0'), next_char(&mut chars));
+        assert_eq!(Some(';'), next_char(&mut chars));
+        assert_eq!(Some('\n'), next_char(&mut chars));
+        while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
                 continue;
             }
