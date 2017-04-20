@@ -1,6 +1,6 @@
 #[derive(Debug)]
 #[derive(PartialEq)]
-enum CharType {
+pub enum CharType {
     Lparen,
     Rparen,
     Lbrace,
@@ -28,7 +28,7 @@ enum CharType {
     Others,
 }
 
-trait CharTypable {
+pub trait CharTypable {
     fn char_type(&self) -> CharType;
 }
 
