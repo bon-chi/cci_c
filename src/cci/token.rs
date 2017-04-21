@@ -3,6 +3,8 @@ use std::iter::Peekable;
 use super::char_type::CharType;
 use super::char_type::CharTypable;
 
+#[derive(Debug)]
+#[derive(PartialEq)]
 enum TokenKind {
     Lparen,
     Rparen,
@@ -103,13 +105,15 @@ fn next_token<'a>(chars: &mut Peekable<Chars<'a>>) -> (Option<Token>) {
                 // }
             }
             CharType::Digit => {
-                let mut num = 0;
+                let mut num = c.to_digit(10).unwrap() as i32;
                 while let Some(c) = next_char(chars) {
                     match c.char_type() {
                         CharType::Digit => {
                             num = num * 10 + (c.to_digit(10).unwrap() as i32);
                         }
-                        _ => {}
+                        _ => {
+                            break;
+                        }
                     }
                 }
                 return Some(Token {
@@ -133,7 +137,21 @@ fn next_token<'a>(chars: &mut Peekable<Chars<'a>>) -> (Option<Token>) {
 #[cfg(test)]
 mod tests {
     use super::next_char;
+    use super::next_token;
+    use super::TokenKind;
     #[test]
+    fn text_next_token() {
+        let mut chars = "12 3 456 78".chars().peekable();
+        let token = next_token(&mut chars).unwrap();
+        assert_eq!(token.intValue, Some(12));
+        assert_eq!(token.kind, TokenKind::IntNum);
+        let token = next_token(&mut chars).unwrap();
+        assert_eq!(token.intValue, Some(3));
+        let token = next_token(&mut chars).unwrap();
+        assert_eq!(token.intValue, Some(456));
+        let token = next_token(&mut chars).unwrap();
+        assert_eq!(token.intValue, Some(78));
+    }
     fn test_next_char() {
         let mut chars = "// one line comment
         /*
@@ -143,8 +161,8 @@ mod tests {
                          {
             return 0;
         }"
-                            .chars()
-                            .peekable();
+            .chars()
+            .peekable();
         assert_eq!(Some('\n'), next_char(&mut chars));
         while let Some(c) = next_char(&mut chars) {
             if c == ' ' {
